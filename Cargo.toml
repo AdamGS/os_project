@@ -1,0 +1,9 @@
+[package]
+name="blog_os"
+version="0.0.1"
+
+[lib]
+crate-type=["staticlib"]
+
+[dependencies]
+rlibc = "1.0"
