@@ -5,6 +5,7 @@ section .text
 bits 32
 start:
     mov esp, stack_top
+    mov edi, ebx
     call check_multiboot
     call check_cpuid
     call check_long_mode
@@ -91,7 +92,7 @@ set_up_page_tables:
     mov [p4_table], eax
 
     mov eax, p2_table
-    or eax, 0b11
+    or eax, 0b11 ; present + writable
     mov [p3_table], eax
 
     mov ecx, 0
@@ -150,5 +151,5 @@ p3_table:
 p2_table:
     resb 4096
 stack_bottom:
-    resb 64
+    resb 4096 * 4
 stack_top:
