@@ -5,7 +5,8 @@ section .text
 bits 32
 start:
     mov esp, stack_top
-    mov edi, ebx
+    mov edi, ebx ; Move Multiboot info pointer ot edi
+
     call check_multiboot
     call check_cpuid
     call check_long_mode
