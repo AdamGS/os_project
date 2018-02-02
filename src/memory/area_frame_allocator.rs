@@ -39,6 +39,8 @@ impl FrameAllocator for AreaFrameAllocator {
                     number: self.multiboot_end.number + 1,
                 }
             } else {
+                // frame is unused, increment `next_free_frame` and return it.
+                // this is basiclly allocating the frame.
                 self.next_free_frame.number += 1;
                 return Some(frame);
             }
