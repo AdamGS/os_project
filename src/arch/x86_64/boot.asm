@@ -12,6 +12,11 @@ start:
     call check_long_mode
 
     call set_up_page_tables
+
+    mov eax, p4_table
+    or eax, 0b11 ; present + writable
+    mov [p4_table + 511 * 8], eax ; This sets up a recursive page table.
+
     call enable_paging
 
     lgdt [gdt64.pointer]

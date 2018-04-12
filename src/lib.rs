@@ -4,6 +4,8 @@
 #![feature(unique)]
 #![feature(ptr_internals)]
 
+#[macro_use]
+extern crate bitflags;
 extern crate multiboot2;
 extern crate rlibc;
 extern crate spin;
@@ -12,6 +14,8 @@ extern crate volatile;
 #[macro_use]
 mod vga_buffers;
 mod memory;
+
+use memory::FrameAllocator;
 
 #[no_mangle]
 pub extern "C" fn rust_main(multiboot_information_address: usize) {
@@ -32,12 +36,37 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
         .elf_sections_tag()
         .expect("Elf-sections tag required");
 
+    let kernel_start = elf_sections.sections().map(|s| s.addr).min().unwrap();
+    let kernel_end = elf_sections
+        .sections()
+        .map(|s| s.addr + s.size)
+        .max()
+        .unwrap();
+
+    let multiboot_start = multiboot_information_address;
+    let multiboot_end = multiboot_start + (boot_info.total_size as usize);
+
     println!("The kernel sections are:");
     for section in elf_sections.sections() {
         println!(
             "addr:0x{:x}, size: 0x{:x}, flags:0x{:x}",
             section.addr, section.size, section.flags
         );
+    }
+
+    let mut allocator = memory::AreaFrameAllocator::new(
+        kernel_start as usize,
+        kernel_end as usize,
+        multiboot_start as usize,
+        multiboot_end as usize,
+        memory_map_tag.memory_areas(),
+    );
+
+    for i in 0.. {
+        if let None = allocator.allocate_frame() {
+            println!("allocated {} frames", i);
+            break;
+        }
     }
 
     loop {}
