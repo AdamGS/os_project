@@ -48,7 +48,7 @@ impl FrameAllocator for AreaFrameAllocator {
             // If for some reason the frame wasn't valid.
             return self.allocate_frame();
         } else {
-            None // This means we are out of memory.
+            None // This means we are out of memory!
         }
     }
 
@@ -59,6 +59,7 @@ impl FrameAllocator for AreaFrameAllocator {
 
 impl AreaFrameAllocator {
     fn choose_next_area(&mut self) {
+        // This function chooses the next memory area with the minimal address that still has free frames.
         self.current_area = self.areas
             .clone()
             .filter(|area| {

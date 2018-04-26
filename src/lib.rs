@@ -54,6 +54,15 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
         );
     }
 
+    println!(
+        "kernel_start: 0x{:x}, kernel_end: 0x{:x}",
+        kernel_start, kernel_end
+    );
+    println!(
+        "multiboot_start: 0x{:x}, multiboot_end: 0x{:x}",
+        multiboot_start, multiboot_end
+    );
+
     let mut allocator = memory::AreaFrameAllocator::new(
         kernel_start as usize,
         kernel_end as usize,
