@@ -44,9 +44,7 @@ impl Page {
             address
         );
 
-        Page {
-            number: address / PAGE_SIZE,
-        }
+        Page { number: address / PAGE_SIZE }
     }
 }
 
@@ -76,8 +74,7 @@ impl ActivePageTable {
                         // address must be 1GiB aligned
                         assert!(start_frame.number % (ENTRY_COUNT * ENTRY_COUNT) == 0);
                         return Some(Frame {
-                            number: start_frame.number + page.p2_index() * ENTRY_COUNT
-                                + page.p1_index(),
+                            number: start_frame.number + page.p2_index() * ENTRY_COUNT + page.p1_index(),
                         });
                     }
                 }
@@ -105,9 +102,7 @@ impl ActivePageTable {
     }
 
     pub fn map_to<A>(&mut self, page: Page, frame: Frame, flags: EntryFlags, allocator: &mut A)
-    where
-        A: FrameAllocator,
-    {
+    where A: FrameAllocator {
         let mut p3 = self.p4_mut().next_table_create(page.p4_index(), allocator);
         let mut p2 = p3.next_table_create(page.p3_index(), allocator);
         let mut p1 = p2.next_table_create(page.p2_index(), allocator);
@@ -123,17 +118,13 @@ impl ActivePageTable {
     }
 
     pub fn map<A>(&mut self, page: Page, flags: EntryFlags, allocator: &mut A)
-    where
-        A: FrameAllocator,
-    {
+    where A: FrameAllocator {
         let frame = allocator.allocate_frame().expect("out of memory");
         self.map_to(page, frame, flags, allocator)
     }
 
     pub fn identity_map<A>(&mut self, frame: Frame, flags: EntryFlags, allocator: &mut A)
-    where
-        A: FrameAllocator,
-    {
+    where A: FrameAllocator {
         let page = Page::containing_address(frame.start_address());
         self.map_to(page, frame, flags, allocator)
     }
