@@ -10,6 +10,7 @@ extern crate multiboot2;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
+extern crate x86_64;
 
 #[macro_use]
 mod vga_buffers;
