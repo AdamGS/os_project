@@ -52,15 +52,14 @@ impl FrameAllocator for AreaFrameAllocator {
         }
     }
 
-    fn deallocate_frame(&mut self, frame: Frame) {
-        unimplemented!()
-    }
+    fn deallocate_frame(&mut self, frame: Frame) {}
 }
 
 impl AreaFrameAllocator {
     fn choose_next_area(&mut self) {
         // This function chooses the next memory area with the minimal address that still has free frames.
-        self.current_area = self.areas
+        self.current_area = self
+            .areas
             .clone()
             .filter(|area| {
                 let address = area.base_addr + area.length - 1;

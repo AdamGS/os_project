@@ -110,6 +110,7 @@ where
             self.entries[index].set(frame, EntryFlags::PRESENT | EntryFlags::WRITABLE);
             self.next_table_mut(index).unwrap().zero();
         }
+
         self.next_table_mut(index).unwrap()
     }
 }

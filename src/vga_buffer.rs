@@ -1,7 +1,7 @@
 #![allow(dead_code)]
-use volatile::Volatile;
 use core::fmt;
 use spin::Mutex;
+use volatile::Volatile;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
@@ -130,7 +130,7 @@ pub fn print(args: fmt::Arguments) {
 
 macro_rules! print {
     ($($arg:tt)*) => ({
-        $crate::vga_buffers::print(format_args!($($arg)*))
+        $crate::vga_buffer::print(format_args!($($arg)*))
     });
 }
 

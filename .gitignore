@@ -21,6 +21,8 @@ Cargo.lock
 !.vscode/extensions.json
 .history
 
+/rls/
+
 
 # End of https://www.gitignore.io/api/rust,visualstudiocode
 
