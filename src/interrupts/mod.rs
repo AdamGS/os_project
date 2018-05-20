@@ -47,10 +47,11 @@ pub fn init(memory_controller: &mut MemoryController) {
 
     let gdt = GDT.call_once(|| {
         let mut gdt = gdt::Gdt::new();
-        let code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
-        let tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
+        tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
+        code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
         gdt
     });
+
     gdt.load();
 
     unsafe {

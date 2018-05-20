@@ -4,10 +4,7 @@ mod table;
 mod temporary_page;
 
 pub use self::entry::*;
-use self::mapper::*;
-use self::table::{Level4, P4, Table};
 use self::temporary_page::TemporaryPage;
-use core::ptr::Unique;
 use memory::{Frame, FrameAllocator, PAGE_SIZE};
 use multiboot2::BootInformation;
 
@@ -245,7 +242,6 @@ where
     });
 
     let old_table = active_table.switch(new_table);
-    println!("New Table!");
 
     let old_p4_page = Page::containing_address(old_table.p4_frame.start_address());
 

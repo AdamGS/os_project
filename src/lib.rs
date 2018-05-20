@@ -75,8 +75,6 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     x86_64::instructions::interrupts::int3();
 
-    //let x = [0; 999999];
-
     println!("It did not crash!");
 
     loop {}
