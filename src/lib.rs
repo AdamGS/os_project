@@ -7,6 +7,7 @@
 #![feature(ptr_internals)]
 #![feature(global_allocator)]
 #![feature(abi_x86_interrupt)]
+#![feature(asm)]
 
 #[macro_use]
 extern crate alloc;
@@ -26,6 +27,7 @@ extern crate x86_64;
 
 #[macro_use]
 mod vga_buffer;
+mod hardware;
 mod interrupts;
 mod memory;
 

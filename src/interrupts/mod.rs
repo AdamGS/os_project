@@ -2,9 +2,12 @@ mod gdt;
 
 use memory::MemoryController;
 use spin::Once;
+use x86_64::instructions::interrupts::enable;
 use x86_64::structures::idt::{ExceptionStackFrame, Idt};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
+
+use hardware::Port;
 
 const DOUBLE_FAULT_IST_INDEX: usize = 0;
 
@@ -20,6 +23,11 @@ lazy_static! {
             idt.double_fault
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX as u16);
+
+            idt.interrupts[0x60].set_handler_fn(keyboard_handler);
+            idt.interrupts[0x64].set_handler_fn(keyboard_handler);
+            idt.interrupts[0x20].set_handler_fn(keyboard_handler);
+            idt.interrupts[0x21].set_handler_fn(keyboard_handler);
         }
 
         idt
@@ -72,4 +80,8 @@ extern "x86-interrupt" fn double_fault_handler(
 ) {
     println!("\nEXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
     loop {}
+}
+
+extern "x86-interrupt" fn keyboard_handler(stack_fame: &mut ExceptionStackFrame) {
+    println!("Exception: KEYBOARD!!!!");
 }
