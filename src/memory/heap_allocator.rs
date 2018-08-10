@@ -1,5 +1,4 @@
-use alloc::heap::Opaque;
-use alloc::heap::{Alloc, AllocErr, GlobalAlloc, Layout};
+use core::alloc::{Alloc, AllocErr, GlobalAlloc, Layout};
 use core::ptr;
 use core::sync::atomic::{AtomicUsize, Ordering};
 
@@ -21,7 +20,7 @@ impl BumpAllocator {
 }
 
 unsafe impl GlobalAlloc for BumpAllocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut Opaque {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         loop {
             let current_next = self.next.load(Ordering::Relaxed);
             let alloc_start = align_up(current_next, layout.align());
@@ -39,7 +38,7 @@ unsafe impl GlobalAlloc for BumpAllocator {
             }
         }
     }
-    unsafe fn dealloc(&self, ptr: *mut Opaque, layout: Layout) {
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         unimplemented!()
     }
 }

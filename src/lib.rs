@@ -5,13 +5,13 @@
 #![no_std]
 #![feature(unique)]
 #![feature(ptr_internals)]
-#![feature(global_allocator)]
 #![feature(abi_x86_interrupt)]
 #![feature(asm)]
+#![feature(panic_implementation)]
+#![feature(alloc_error_handler)]
 
 #[macro_use]
 extern crate alloc;
-
 #[macro_use]
 extern crate lazy_static;
 
@@ -23,6 +23,7 @@ extern crate multiboot2;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
+#[macro_use]
 extern crate x86_64;
 
 #[macro_use]
@@ -35,8 +36,9 @@ mod memory;
 extern crate once;
 
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
-pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
+pub const HEAP_SIZE: usize = 200 * 1024; // 100 KiB
 
+use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
 #[global_allocator]
@@ -54,8 +56,11 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     // set up guard page and map the heap pages
     let mut memory_controller = memory::init(boot_info);
-
     interrupts::init(&mut memory_controller);
+
+    use hardware::pic;
+
+    let board = pic::init();
 
     unsafe {
         HEAP_ALLOCATOR
@@ -63,40 +68,59 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
             .init(HEAP_START, HEAP_START + HEAP_SIZE);
     }
 
-    use alloc::boxed::Box;
-    let mut heap_test = Box::new(42);
-    *heap_test -= 15;
-    let heap_test2 = Box::new("hello");
-    println!("{:?} {:?}", heap_test, heap_test2);
+    //board.master_pic.command_port.write(0xFD);
 
-    let mut vec_test = vec![1, 2, 3, 4, 5, 6, 7];
-    vec_test[3] = 42;
-    for i in &vec_test {
-        print!("{} ", i);
+    // use alloc::boxed::Box;
+    // let mut heap_test = Box::new(42);
+    // *heap_test -= 15;
+    // let heap_test2 = Box::new("hello");
+    // println!("{:?} {:?}", heap_test, heap_test2);
+
+    // let mut vec_test = vec![1, 2, 3, 4, 5, 6, 7];
+    // vec_test[3] = 42;
+    // for i in &vec_test {
+    //     print!("{} ", i);
+    // }
+
+    // x86_64::instructions::interrupts::int3();
+
+    unsafe {
+        //int!(20);
+        //int!(32);
+//        int!(52);
+        // int!(32);
+        x86_64::instructions::interrupts::enable();
     }
 
-    x86_64::instructions::interrupts::int3();
+    println!("interrupts now enabled");
 
-    println!("It did not crash!");
-
-    loop {}
+    loop {
+        unsafe {
+            asm!("hlt");
+        }
+    }
 }
 
-#[lang = "panic_fmt"]
+#[panic_implementation]
 #[no_mangle]
-pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
-    println!("\n\nPANIC in {} at line {}:", file, line);
-    println!("    {}", fmt);
-    println!("General panic :(");
+pub fn panic(_info: &PanicInfo) -> ! {
+    if let Some(location) = _info.location() {
+        println!(
+            "\n\nPANIC in {} at line {}:",
+            location.file(),
+            location.line()
+        );
+        println!("General panic :(");
+    }
     loop {}
 }
+
+use alloc::alloc::Layout;
 
 #[lang = "oom"]
+#[alloc_error_handler]
 #[no_mangle]
-pub extern "C" fn oom(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
-    println!("\n\nPANIC in {} at line {}:", file, line);
-    println!("    {}", fmt);
-    println!("Out of memory");
+pub fn oom_panic(layout: Layout) -> ! {
     loop {}
 }
 

@@ -2,12 +2,10 @@ mod gdt;
 
 use memory::MemoryController;
 use spin::Once;
-use x86_64::instructions::interrupts::enable;
 use x86_64::structures::idt::{ExceptionStackFrame, Idt};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
-
-use hardware::Port;
+use hardware::keyboard::Keyboard;
 
 const DOUBLE_FAULT_IST_INDEX: usize = 0;
 
@@ -24,10 +22,7 @@ lazy_static! {
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX as u16);
 
-            idt.interrupts[0x60].set_handler_fn(keyboard_handler);
-            idt.interrupts[0x64].set_handler_fn(keyboard_handler);
-            idt.interrupts[0x20].set_handler_fn(keyboard_handler);
-            idt.interrupts[0x21].set_handler_fn(keyboard_handler);
+            idt.interrupts[1].set_handler_fn(keyboard_handler);
         }
 
         idt
@@ -40,7 +35,7 @@ pub fn init(memory_controller: &mut MemoryController) {
     use x86_64::structures::gdt::SegmentSelector;
 
     let double_fault_stack = memory_controller
-        .alloc_stack(1)
+        .alloc_stack(8)
         .expect("could not allocate double fault stack");
 
     let tss = TSS.call_once(|| {
@@ -52,18 +47,18 @@ pub fn init(memory_controller: &mut MemoryController) {
 
     let mut code_selector = SegmentSelector(0);
     let mut tss_selector = SegmentSelector(0);
-
     let gdt = GDT.call_once(|| {
         let mut gdt = gdt::Gdt::new();
-        tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
         code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
+        tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
         gdt
     });
-
     gdt.load();
 
     unsafe {
+        // reload code segment register
         set_cs(code_selector);
+        // load TSS
         load_tss(tss_selector);
     }
 
@@ -71,7 +66,7 @@ pub fn init(memory_controller: &mut MemoryController) {
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFrame) {
-    println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
+    println!("\nEXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn double_fault_handler(
@@ -82,6 +77,11 @@ extern "x86-interrupt" fn double_fault_handler(
     loop {}
 }
 
-extern "x86-interrupt" fn keyboard_handler(stack_fame: &mut ExceptionStackFrame) {
-    println!("Exception: KEYBOARD!!!!");
+extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
+    let keyboard = Keyboard::new();
+    let v = keyboard.read();
+    if let Some(c) = v {
+        println!("{}", c as char);
+    }
+    return;
 }

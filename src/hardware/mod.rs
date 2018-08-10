@@ -1,36 +1,37 @@
-mod keyboard;
+pub mod keyboard;
+pub mod pic;
 
 use core::marker::PhantomData;
 
-trait InOut {
-    unsafe fn port_in(port: u16) -> Self;
-    unsafe fn port_out(port: u16, value: Self);
+pub trait InOut {
+    unsafe fn read(port: u16) -> Self;
+    unsafe fn write(port: u16, value: Self);
 }
 
 impl InOut for u8 {
-    unsafe fn port_in(port: u16) -> u8 {
+    unsafe fn read(port: u16) -> u8 {
         inb(port)
     }
 
-    unsafe fn port_out(port: u16, value: u8) {
+    unsafe fn write(port: u16, value: u8) {
         outb(port, value);
     }
 }
 impl InOut for u16 {
-    unsafe fn port_in(port: u16) -> u16 {
+    unsafe fn read(port: u16) -> u16 {
         inw(port)
     }
 
-    unsafe fn port_out(port: u16, value: u16) {
+    unsafe fn write(port: u16, value: u16) {
         outw(port, value);
     }
 }
 impl InOut for u32 {
-    unsafe fn port_in(port: u16) -> u32 {
+    unsafe fn read(port: u16) -> u32 {
         inl(port)
     }
 
-    unsafe fn port_out(port: u16, value: u32) {
+    unsafe fn write(port: u16, value: u32) {
         outl(port, value);
     }
 }
@@ -47,11 +48,24 @@ impl<T: InOut> Port<T> {
             phantom_data: PhantomData,
         }
     }
+
+    pub fn read(&self) -> T {
+        unsafe { T::read(self.port) }
+    }
+
+    pub fn write(&self, value: T)
+    where
+        T: InOut,
+    {
+        unsafe {
+            T::write(self.port, value);
+        }
+    }
 }
 
 unsafe fn inb(port: u16) -> u8 {
     let mut value: u8;
-    asm!("inb %al, %dx" : "={al}"(value) :
+    asm!("inb %dx, %al" : "={al}"(value) :
          "{dx}"(port) ::
          "volatile");
 
@@ -66,7 +80,7 @@ unsafe fn outb(port: u16, value: u8) {
 
 unsafe fn inw(port: u16) -> u16 {
     let mut value: u16;
-    asm!("inw %al, %dx" : "={al}"(value) :
+    asm!("inw %dx, %al" : "={al}"(value) :
          "{dx}"(port) ::
          "volatile");
 
@@ -74,14 +88,14 @@ unsafe fn inw(port: u16) -> u16 {
 }
 
 unsafe fn outw(port: u16, value: u16) {
-    asm!("outw %al, %dx" ::
+    asm!("outw %dx, %al" ::
          "{dx}"(port), "{al}"(value) ::
          "volatile");
 }
 
 unsafe fn inl(port: u16) -> u32 {
     let mut value: u32;
-    asm!("inl %al, %dx" : "={al}"(value) :
+    asm!("inl %dx, %al" : "={al}"(value) :
          "{dx}"(port) ::
          "volatile");
 
@@ -89,7 +103,7 @@ unsafe fn inl(port: u16) -> u32 {
 }
 
 unsafe fn outl(port: u16, value: u32) {
-    asm!("outl %al, %dx" ::
+    asm!("outl %dx, %al" ::
          "{dx}"(port), "{al}"(value) ::
          "volatile");
 }
