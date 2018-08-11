@@ -23,7 +23,7 @@ impl Keyboard {
         let status = self.control_port.read();
         let keycode = self.data_port.read();
 
-        if status.trailing_zeros() == 0 && keycode < 52 {
+        if status.trailing_zeros() == 0 {
             self.ack();
             return Some(keycode);
         }
