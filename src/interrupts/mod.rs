@@ -80,8 +80,5 @@ extern "x86-interrupt" fn double_fault_handler(
 extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
     let keyboard = Keyboard::new();
     let v = keyboard.read();
-    if let Some(c) = v {
-        println!("{}", c as char);
-    }
     return;
 }
