@@ -27,9 +27,11 @@ unsafe impl GlobalAlloc for BumpAllocator {
             let alloc_end = alloc_start.saturating_add(layout.size());
 
             if alloc_end <= self.heap_end {
-                let next_now =
-                    self.next
-                        .compare_and_swap(current_next, alloc_end, Ordering::Relaxed);
+                let next_now = self.next.compare_and_swap(
+                    current_next,
+                    alloc_end,
+                    Ordering::Relaxed,
+                );
                 if next_now == current_next {
                     return alloc_start as _;
                 }

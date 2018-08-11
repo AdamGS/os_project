@@ -15,10 +15,6 @@ impl Pic {
             data_port: Port::new(base_port + 1),
         }
     }
-
-    pub fn ack(&self) {
-        self.command_port.write(0x20);
-    }
 }
 
 pub struct PicBoard {

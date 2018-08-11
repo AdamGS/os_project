@@ -34,7 +34,9 @@ impl FrameAllocator for AreaFrameAllocator {
                 self.next_free_frame = Frame {
                     number: self.kernel_end.number + 1,
                 };
-            } else if frame >= self.multiboot_start && frame <= self.multiboot_end {
+            } else if frame >= self.multiboot_start
+                && frame <= self.multiboot_end
+            {
                 self.next_free_frame = Frame {
                     number: self.multiboot_end.number + 1,
                 }
@@ -63,12 +65,14 @@ impl AreaFrameAllocator {
             .clone()
             .filter(|area| {
                 let address = area.base_addr + area.length - 1;
-                Frame::containing_address(address as usize) >= self.next_free_frame
+                Frame::containing_address(address as usize)
+                    >= self.next_free_frame
             })
             .min_by_key(|area| area.base_addr);
 
         if let Some(area) = self.current_area {
-            let start_frame = Frame::containing_address(area.base_addr as usize);
+            let start_frame =
+                Frame::containing_address(area.base_addr as usize);
             if self.next_free_frame < start_frame {
                 self.next_free_frame = start_frame;
             }
@@ -81,7 +85,8 @@ impl AreaFrameAllocator {
         multiboot_start: usize,
         multiboot_end: usize,
         memory_areas: MemoryAreaIter,
-    ) -> AreaFrameAllocator {
+    ) -> AreaFrameAllocator
+    {
         let mut allocator = AreaFrameAllocator {
             next_free_frame: Frame::containing_address(0),
             current_area: None,

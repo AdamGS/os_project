@@ -13,9 +13,7 @@ struct TinyAllocator([Option<Frame>; 3]);
 
 impl TemporaryPage {
     pub fn new<A>(page: Page, allocator: &mut A) -> TemporaryPage
-    where
-        A: FrameAllocator,
-    {
+    where A: FrameAllocator {
         TemporaryPage {
             page: page,
             allocator: TinyAllocator::new(allocator),
@@ -24,14 +22,24 @@ impl TemporaryPage {
 
     /// Maps the temporary page to the given frame in the active table.
     /// Returns the start address of the temporary page.
-    pub fn map(&mut self, frame: Frame, active_table: &mut Mapper) -> VirtualAddress {
+    pub fn map(
+        &mut self,
+        frame: Frame,
+        active_table: &mut Mapper,
+    ) -> VirtualAddress
+    {
         use super::entry::EntryFlags;
 
         assert!(
             active_table.translate_page(self.page).is_none(),
             "temporary page is already mapped."
         );
-        active_table.map_to(self.page, frame, EntryFlags::WRITABLE, &mut self.allocator);
+        active_table.map_to(
+            self.page,
+            frame,
+            EntryFlags::WRITABLE,
+            &mut self.allocator,
+        );
         self.page.start_address()
     }
 
@@ -46,16 +54,15 @@ impl TemporaryPage {
         &mut self,
         frame: Frame,
         active_table: &mut Mapper,
-    ) -> &mut Table<Level1> {
+    ) -> &mut Table<Level1>
+    {
         unsafe { &mut *(self.map(frame, active_table) as *mut Table<Level1>) }
     }
 }
 
 impl TinyAllocator {
     fn new<A>(allocator: &mut A) -> TinyAllocator
-    where
-        A: FrameAllocator,
-    {
+    where A: FrameAllocator {
         let mut f = || allocator.allocate_frame();
         let frames = [f(), f(), f()];
 

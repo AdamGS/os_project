@@ -97,11 +97,14 @@ impl InactivePageTable {
         frame: Frame,
         active_table: &mut Mapper,
         temporary_page: &mut TemporaryPage,
-    ) -> InactivePageTable {
+    ) -> InactivePageTable
+    {
         {
-            let table = temporary_page.map_table_frame(frame.clone(), active_table);
+            let table =
+                temporary_page.map_table_frame(frame.clone(), active_table);
             table.zero();
-            table[511].set(frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
+            table[511]
+                .set(frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
         }
 
         temporary_page.unmap(active_table);
@@ -138,7 +141,11 @@ impl ActivePageTable {
         }
     }
 
-    pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
+    pub fn switch(
+        &mut self,
+        new_table: InactivePageTable,
+    ) -> InactivePageTable
+    {
         use x86_64::registers::control_regs;
         use x86_64::PhysicalAddress;
 
@@ -146,7 +153,9 @@ impl ActivePageTable {
             p4_frame: Frame::containing_address(control_regs::cr3().0 as usize),
         };
         unsafe {
-            control_regs::cr3_write(PhysicalAddress(new_table.p4_frame.start_address() as u64));
+            control_regs::cr3_write(PhysicalAddress(
+                new_table.p4_frame.start_address() as u64,
+            ));
         }
         old_table
     }
@@ -163,7 +172,8 @@ impl ActivePageTable {
         use x86_64::registers::control_regs;
 
         {
-            let backup = Frame::containing_address(control_regs::cr3().0 as usize);
+            let backup =
+                Frame::containing_address(control_regs::cr3().0 as usize);
 
             // map temporary_page to current p4 table
             let p4_table = temporary_page.map_table_frame(backup.clone(), self);
@@ -179,7 +189,8 @@ impl ActivePageTable {
             f(self);
 
             // restore recursive mapping to original p4 table
-            p4_table[511].set(backup, EntryFlags::PRESENT | EntryFlags::WRITABLE);
+            p4_table[511]
+                .set(backup, EntryFlags::PRESENT | EntryFlags::WRITABLE);
             tlb::flush_all();
         }
 
@@ -187,11 +198,15 @@ impl ActivePageTable {
     }
 }
 
-pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> ActivePageTable
+pub fn remap_the_kernel<A>(
+    allocator: &mut A,
+    boot_info: &BootInformation,
+) -> ActivePageTable
 where
     A: FrameAllocator,
 {
-    let mut temporary_page = TemporaryPage::new(Page { number: 0xcafebabe }, allocator);
+    let mut temporary_page =
+        TemporaryPage::new(Page { number: 0xcafebabe }, allocator);
 
     let mut active_table = unsafe { ActivePageTable::new() };
 
@@ -224,8 +239,10 @@ where
 
             let flags = EntryFlags::from_elf_section_flags(section);
 
-            let start_frame = Frame::containing_address(section.start_address());
-            let end_frame = Frame::containing_address(section.end_address() - 1);
+            let start_frame =
+                Frame::containing_address(section.start_address());
+            let end_frame =
+                Frame::containing_address(section.end_address() - 1);
             for frame in Frame::range_inclusive(start_frame, end_frame) {
                 mapper.identity_map(frame, flags, allocator);
             }
@@ -234,8 +251,10 @@ where
         let vga_buffer_frame = Frame::containing_address(0xb8000);
         mapper.identity_map(vga_buffer_frame, EntryFlags::WRITABLE, allocator);
 
-        let multiboot_start = Frame::containing_address(boot_info.start_address());
-        let multiboot_end = Frame::containing_address(boot_info.end_address() - 1);
+        let multiboot_start =
+            Frame::containing_address(boot_info.start_address());
+        let multiboot_end =
+            Frame::containing_address(boot_info.end_address() - 1);
         for frame in Frame::range_inclusive(multiboot_start, multiboot_end) {
             mapper.identity_map(frame, EntryFlags::PRESENT, allocator);
         }
@@ -243,7 +262,8 @@ where
 
     let old_table = active_table.switch(new_table);
 
-    let old_p4_page = Page::containing_address(old_table.p4_frame.start_address());
+    let old_p4_page =
+        Page::containing_address(old_table.p4_frame.start_address());
 
     active_table.unmap(old_p4_page, allocator);
     println!("guard page at {:#x}", old_p4_page.start_address());

@@ -51,6 +51,9 @@ pub fn init(memory_controller: &mut MemoryController) {
         let mut gdt = gdt::Gdt::new();
         code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
         tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
+        gdt.add_entry(gdt::Descriptor::user_mode_code_segment());
+        gdt.add_entry(gdt::Descriptor::user_mode_data_segment());
+
         gdt
     });
     gdt.load();

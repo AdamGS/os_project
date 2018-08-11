@@ -19,6 +19,7 @@ bitflags! {
         const USER_SEGMENT      = 1 << 44;
         const PRESENT           = 1 << 47;
         const LONG_MODE         = 1 << 53;
+        const USER_MODE         = 96;
     }
 }
 
@@ -50,6 +51,25 @@ impl Descriptor {
         high.set_bits(0..32, ptr.get_bits(32..64));
 
         Descriptor::SystemSegment(low, high)
+    }
+
+    pub fn user_mode_code_segment() -> Descriptor {
+        let flags = DescriptorFlags::USER_SEGMENT
+            | DescriptorFlags::PRESENT
+            | DescriptorFlags::EXECUTABLE
+            | DescriptorFlags::LONG_MODE
+            | DescriptorFlags::USER_MODE;
+
+        Descriptor::UserSegment(flags.bits())
+    }
+
+    pub fn user_mode_data_segment() -> Descriptor {
+        let flags = DescriptorFlags::USER_SEGMENT
+            | DescriptorFlags::PRESENT
+            | DescriptorFlags::LONG_MODE
+            | DescriptorFlags::USER_MODE;
+
+        Descriptor::UserSegment(flags.bits())
     }
 }
 

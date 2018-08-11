@@ -1,5 +1,4 @@
 use super::Port;
-use core::ops::BitAnd;
 
 pub struct Keyboard {
     control_port: Port<u8>,
