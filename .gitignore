@@ -23,7 +23,8 @@ Cargo.lock
 
 /rls/
 
-
 # End of https://www.gitignore.io/api/rust,visualstudiocode
 
 /build/
+
+cmake-build-debug/
