@@ -28,9 +28,9 @@ extern crate x86_64;
 
 #[macro_use]
 mod vga_buffer;
+mod hardware;
 mod interrupts;
 mod memory;
-mod hardware;
 
 #[macro_use]
 extern crate once;
@@ -76,7 +76,7 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     loop {
         unsafe {
-            asm!("hlt");
+            x86_64::instructions::halt();
         }
     }
 }

@@ -54,9 +54,7 @@ impl<T: InOut> Port<T> {
     }
 
     pub fn write(&self, value: T)
-    where
-        T: InOut,
-    {
+    where T: InOut {
         unsafe {
             T::write(self.port, value);
         }
@@ -88,7 +86,7 @@ unsafe fn inw(port: u16) -> u16 {
 }
 
 unsafe fn outw(port: u16, value: u16) {
-    asm!("outw %dx, %al" ::
+    asm!("outw %ax, %dx" ::
          "{dx}"(port), "{al}"(value) ::
          "volatile");
 }

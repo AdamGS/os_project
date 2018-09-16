@@ -1,11 +1,11 @@
 mod gdt;
 
+use hardware::keyboard::Keyboard;
 use memory::MemoryController;
 use spin::Once;
 use x86_64::structures::idt::{ExceptionStackFrame, Idt};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
-use hardware::keyboard::Keyboard;
 
 const DOUBLE_FAULT_IST_INDEX: usize = 0;
 
@@ -51,8 +51,8 @@ pub fn init(memory_controller: &mut MemoryController) {
         let mut gdt = gdt::Gdt::new();
         code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
         tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
-        gdt.add_entry(gdt::Descriptor::user_mode_code_segment());
-        gdt.add_entry(gdt::Descriptor::user_mode_data_segment());
+        //        gdt.add_entry(gdt::Descriptor::user_mode_code_segment());
+        //        gdt.add_entry(gdt::Descriptor::user_mode_data_segment());
 
         gdt
     });
@@ -68,20 +68,26 @@ pub fn init(memory_controller: &mut MemoryController) {
     IDT.load();
 }
 
-extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFrame) {
+extern "x86-interrupt" fn breakpoint_handler(
+    stack_frame: &mut ExceptionStackFrame,
+) {
     println!("\nEXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn double_fault_handler(
     stack_frame: &mut ExceptionStackFrame,
     _error_code: u64,
-) {
+)
+{
     println!("\nEXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
     loop {}
 }
 
-extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
+extern "x86-interrupt" fn keyboard_handler(
+    stack_frame: &mut ExceptionStackFrame,
+) {
     let keyboard = Keyboard::new();
     let v = keyboard.read();
+
     return;
 }
