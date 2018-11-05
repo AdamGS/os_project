@@ -14,7 +14,7 @@ Cargo.lock
 **/*.rs.bk
 
 ### VisualStudioCode ###
-.vscode/*
+.vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -28,3 +28,5 @@ Cargo.lock
 /build/
 
 cmake-build-debug/
+CMakeLists.txt
+.idea/
