@@ -68,24 +68,19 @@ pub fn init(memory_controller: &mut MemoryController) {
     IDT.load();
 }
 
-extern "x86-interrupt" fn breakpoint_handler(
-    stack_frame: &mut ExceptionStackFrame,
-) {
+extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFrame) {
     println!("\nEXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn double_fault_handler(
     stack_frame: &mut ExceptionStackFrame,
     _error_code: u64,
-)
-{
+) {
     println!("\nEXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
     loop {}
 }
 
-extern "x86-interrupt" fn keyboard_handler(
-    stack_frame: &mut ExceptionStackFrame,
-) {
+extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
     let keyboard = Keyboard::new();
     let v = keyboard.read();
 

@@ -3,14 +3,12 @@
 #![feature(allocator_api)]
 #![feature(alloc)]
 #![no_std]
-#![feature(unique)]
 #![feature(ptr_internals)]
 #![feature(abi_x86_interrupt)]
 #![feature(asm)]
-#![feature(panic_implementation)]
+#![feature(panic_handler)]
 #![feature(alloc_error_handler)]
 
-#[macro_use]
 extern crate alloc;
 #[macro_use]
 extern crate lazy_static;
@@ -23,7 +21,6 @@ extern crate multiboot2;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
-#[macro_use]
 extern crate x86_64;
 
 #[macro_use]
@@ -81,7 +78,8 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     }
 }
 
-#[panic_implementation]
+#[panic_handler]
+#[lang = "eh_personality"]
 #[no_mangle]
 pub fn panic(_info: &PanicInfo) -> ! {
     if let Some(location) = _info.location() {

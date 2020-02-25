@@ -1,8 +1,6 @@
 use super::entry::*;
-use super::table::{self, Level1, Level4, Table};
-use super::{
-    InactivePageTable, Page, PhysicalAddress, VirtualAddress, ENTRY_COUNT,
-};
+use super::table::{self, Level4, Table};
+use super::{Page, PhysicalAddress, VirtualAddress, ENTRY_COUNT};
 use core::ptr::Unique;
 use memory::{Frame, FrameAllocator, PAGE_SIZE};
 
@@ -36,10 +34,7 @@ impl Mapper {
                 if let Some(start_frame) = p3_entry.pointed_frame() {
                     if p3_entry.flags().contains(EntryFlags::HUGE_PAGE) {
                         // address must be 1GiB aligned
-                        assert!(
-                            start_frame.number % (ENTRY_COUNT * ENTRY_COUNT)
-                                == 0
-                        );
+                        assert!(start_frame.number % (ENTRY_COUNT * ENTRY_COUNT) == 0);
                         return Some(Frame {
                             number: start_frame.number
                                 + page.p2_index() * ENTRY_COUNT
@@ -73,17 +68,11 @@ impl Mapper {
     /// Maps the page to the frame with the provided flags.
     /// The `PRESENT` flag is added by default. Needs a
     /// `FrameAllocator` as it might need to create new page tables.
-    pub fn map_to<A>(
-        &mut self,
-        page: Page,
-        frame: Frame,
-        flags: EntryFlags,
-        allocator: &mut A,
-    ) where
+    pub fn map_to<A>(&mut self, page: Page, frame: Frame, flags: EntryFlags, allocator: &mut A)
+    where
         A: FrameAllocator,
     {
-        let mut p3 =
-            self.p4_mut().next_table_create(page.p4_index(), allocator);
+        let mut p3 = self.p4_mut().next_table_create(page.p4_index(), allocator);
         let mut p2 = p3.next_table_create(page.p3_index(), allocator);
         let mut p1 = p2.next_table_create(page.p2_index(), allocator);
 
@@ -91,11 +80,7 @@ impl Mapper {
         p1[page.p1_index()].set(frame, flags | EntryFlags::PRESENT);
     }
 
-    pub fn translate(
-        &self,
-        virtual_addres: VirtualAddress,
-    ) -> Option<PhysicalAddress>
-    {
+    pub fn translate(&self, virtual_addres: VirtualAddress) -> Option<PhysicalAddress> {
         let offset = virtual_addres % PAGE_SIZE;
         self.translate_page(Page::containing_address(virtual_addres))
             .map(|frame| frame.number * PAGE_SIZE + offset)
@@ -104,19 +89,17 @@ impl Mapper {
     /// Maps the page to some free frame with the provided flags.
     /// The free frame is allocated from the given `FrameAllocator`.
     pub fn map<A>(&mut self, page: Page, flags: EntryFlags, allocator: &mut A)
-    where A: FrameAllocator {
+    where
+        A: FrameAllocator,
+    {
         let frame = allocator.allocate_frame().expect("out of memory");
         self.map_to(page, frame, flags, allocator)
     }
 
     /// Identity map the the given frame with the provided flags.
     /// The `FrameAllocator` is used to create new page tables if needed.
-    pub fn identity_map<A>(
-        &mut self,
-        frame: Frame,
-        flags: EntryFlags,
-        allocator: &mut A,
-    ) where
+    pub fn identity_map<A>(&mut self, frame: Frame, flags: EntryFlags, allocator: &mut A)
+    where
         A: FrameAllocator,
     {
         let page = Page::containing_address(frame.start_address());
@@ -126,7 +109,9 @@ impl Mapper {
     /// Unmaps the given page and adds all freed frames to the given
     /// `FrameAllocator`.
     pub fn unmap<A>(&mut self, page: Page, allocator: &mut A)
-    where A: FrameAllocator {
+    where
+        A: FrameAllocator,
+    {
         assert!(self.translate(page.start_address()).is_some());
 
         let p1 = self

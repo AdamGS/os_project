@@ -42,10 +42,7 @@ pub trait FrameAllocator {
 
 impl Frame {
     fn range_inclusive(start: Frame, end: Frame) -> FrameIter {
-        FrameIter {
-            start: start,
-            end: end,
-        }
+        FrameIter { start, end }
     }
 }
 
@@ -83,11 +80,7 @@ impl MemoryController {
             ref mut frame_allocator,
             ref mut stack_allocator,
         } = self;
-        stack_allocator.alloc_stack(
-            active_table,
-            frame_allocator,
-            size_in_pages,
-        )
+        stack_allocator.alloc_stack(active_table, frame_allocator, size_in_pages)
     }
 }
 
@@ -95,8 +88,7 @@ impl MemoryController {
 pub fn init(boot_info: &BootInformation) -> MemoryController {
     assert_has_not_been_called!("memory::init must be called only once");
 
-    let memory_map_tag =
-        boot_info.memory_map_tag().expect("Memory map tag required");
+    let memory_map_tag = boot_info.memory_map_tag().expect("Memory map tag required");
     let elf_sections_tag = boot_info
         .elf_sections_tag()
         .expect("Elf sections tag required");
@@ -132,8 +124,7 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
         memory_map_tag.memory_areas(),
     );
 
-    let mut active_table =
-        paging::remap_the_kernel(&mut frame_allocator, boot_info);
+    let mut active_table = paging::remap_the_kernel(&mut frame_allocator, boot_info);
 
     use self::paging::Page;
     use {HEAP_SIZE, HEAP_START};
@@ -148,14 +139,13 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
     let stack_allocator = {
         let stack_alloc_start = heap_end_page + 1;
         let stack_alloc_end = stack_alloc_start + 100;
-        let stack_alloc_range =
-            Page::range_inclusive(stack_alloc_start, stack_alloc_end);
+        let stack_alloc_range = Page::range_inclusive(stack_alloc_start, stack_alloc_end);
         stack_allocator::StackAllocator::new(stack_alloc_range)
     };
 
     MemoryController {
-        active_table: active_table,
-        frame_allocator: frame_allocator,
-        stack_allocator: stack_allocator,
+        active_table,
+        frame_allocator,
+        stack_allocator,
     }
 }

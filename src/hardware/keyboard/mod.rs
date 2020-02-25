@@ -22,12 +22,12 @@ impl Keyboard {
         let status = self.control_port.read();
         let keycode = self.data_port.read();
 
+        self.ack();
+
         if status.trailing_zeros() == 0 {
-            self.ack();
             return Some(keycode);
         }
 
-        self.ack();
         None
     }
 }

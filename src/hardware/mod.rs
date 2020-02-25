@@ -44,7 +44,7 @@ pub struct Port<T> {
 impl<T: InOut> Port<T> {
     pub fn new(port: u16) -> Port<T> {
         Port {
-            port: port,
+            port,
             phantom_data: PhantomData,
         }
     }
@@ -54,7 +54,9 @@ impl<T: InOut> Port<T> {
     }
 
     pub fn write(&self, value: T)
-    where T: InOut {
+    where
+        T: InOut,
+    {
         unsafe {
             T::write(self.port, value);
         }

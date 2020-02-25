@@ -1,7 +1,5 @@
 use hardware::InOut;
 use hardware::Port;
-use hardware::*;
-use spin::Mutex;
 
 pub struct Pic {
     pub command_port: Port<u8>,

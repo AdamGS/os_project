@@ -17,8 +17,7 @@ impl StackAllocator {
         active_table: &mut ActivePageTable,
         frame_allocator: &mut FA,
         size_in_pages: usize,
-    ) -> Option<Stack>
-    {
+    ) -> Option<Stack> {
         if size_in_pages == 0 {
             return None;
         }
@@ -41,11 +40,7 @@ impl StackAllocator {
                 self.range = range;
 
                 for page in Page::range_inclusive(start, end) {
-                    active_table.map(
-                        page,
-                        paging::EntryFlags::WRITABLE,
-                        frame_allocator,
-                    );
+                    active_table.map(page, paging::EntryFlags::WRITABLE, frame_allocator);
                 }
 
                 let top_of_stack = end.start_address() + PAGE_SIZE;
@@ -65,10 +60,7 @@ pub struct Stack {
 impl Stack {
     fn new(top: usize, bottom: usize) -> Stack {
         assert!(top > bottom);
-        Stack {
-            top: top,
-            bottom: bottom,
-        }
+        Stack { top, bottom }
     }
 
     pub fn top(&self) -> usize {

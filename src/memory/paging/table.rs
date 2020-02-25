@@ -38,7 +38,8 @@ pub struct Table<L: TableLevel> {
 pub const P4: *mut Table<Level4> = 0xffffffff_fffff000 as *mut _;
 
 impl<L> Index<usize> for Table<L>
-where L: TableLevel
+where
+    L: TableLevel,
 {
     type Output = Entry;
 
@@ -48,7 +49,8 @@ where L: TableLevel
 }
 
 impl<L> IndexMut<usize> for Table<L>
-where L: TableLevel
+where
+    L: TableLevel,
 {
     fn index_mut(&mut self, index: usize) -> &mut Entry {
         &mut self.entries[index]
@@ -56,7 +58,8 @@ where L: TableLevel
 }
 
 impl<L> Table<L>
-where L: TableLevel
+where
+    L: TableLevel,
 {
     pub fn zero(&mut self) {
         for entry in self.entries.iter_mut() {
@@ -66,12 +69,12 @@ where L: TableLevel
 }
 
 impl<L> Table<L>
-where L: HierarchicalLevel
+where
+    L: HierarchicalLevel,
 {
     fn next_table_address(&self, index: usize) -> Option<usize> {
         let entry_flags = self[index].flags();
-        if entry_flags.contains(EntryFlags::PRESENT)
-            && !entry_flags.contains(EntryFlags::HUGE_PAGE)
+        if entry_flags.contains(EntryFlags::PRESENT) && !entry_flags.contains(EntryFlags::HUGE_PAGE)
         {
             let table_address = self as *const _ as usize;
             Some((table_address << 9) | (index << 12))
@@ -85,11 +88,7 @@ where L: HierarchicalLevel
             .map(|address| unsafe { &*(address as *const _) })
     }
 
-    pub fn next_table_mut(
-        &mut self,
-        index: usize,
-    ) -> Option<&mut Table<L::NextLevel>>
-    {
+    pub fn next_table_mut(&mut self, index: usize) -> Option<&mut Table<L::NextLevel>> {
         self.next_table_address(index)
             .map(|address| unsafe { &mut *(address as *mut _) })
     }
@@ -107,10 +106,8 @@ where L: HierarchicalLevel
                 !self.entries[index].flags().contains(EntryFlags::HUGE_PAGE),
                 "mapping code does not support huge pages"
             );
-            let frame =
-                allocator.allocate_frame().expect("no frames available");
-            self.entries[index]
-                .set(frame, EntryFlags::PRESENT | EntryFlags::WRITABLE);
+            let frame = allocator.allocate_frame().expect("no frames available");
+            self.entries[index].set(frame, EntryFlags::PRESENT | EntryFlags::WRITABLE);
             self.next_table_mut(index).unwrap().zero();
         }
 
