@@ -33,10 +33,11 @@ mod memory;
 extern crate once;
 
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
-pub const HEAP_SIZE: usize = 200 * 1024; // 100 KiB
+pub const HEAP_SIZE: usize = 200 * 1024; // 200 KiB
 
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
+use hardware::pic;
 
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
@@ -45,7 +46,7 @@ static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 pub extern "C" fn rust_main(multiboot_information_address: usize) {
     // ATTENTION: we have a very small stack and no guard page
     vga_buffer::clear_screen();
-    println!("Hello World{}", "!");
+    println!("Hello World!");
 
     let boot_info = unsafe { multiboot2::load(multiboot_information_address) };
     enable_nxe_bit();
@@ -55,9 +56,7 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     let mut memory_controller = memory::init(boot_info);
     interrupts::init(&mut memory_controller);
 
-    use hardware::pic;
-
-    let board = pic::init();
+    let pic_board = pic::init();
 
     unsafe {
         HEAP_ALLOCATOR

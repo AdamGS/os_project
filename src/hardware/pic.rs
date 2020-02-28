@@ -1,6 +1,7 @@
 use hardware::InOut;
 use hardware::Port;
 
+// Represents a port on the x86's IO bus
 pub struct Pic {
     pub command_port: Port<u8>,
     pub data_port: Port<u8>,
@@ -54,14 +55,14 @@ pub fn init() -> PicBoard {
     board.master_pic.data_port.write(0x0);
     board.slave_pic.data_port.write(0x0);
 
-    board.master_pic.data_port.write(4);
+    board.master_pic.data_port.write(0x4);
     wait();
-    board.slave_pic.data_port.write(2);
+    board.slave_pic.data_port.write(0x2);
     wait();
 
-    board.master_pic.data_port.write(1);
+    board.master_pic.data_port.write(0x1);
     wait();
-    board.slave_pic.data_port.write(1);
+    board.slave_pic.data_port.write(0x1);
     wait();
 
     board.master_pic.command_port.write(0x0);
