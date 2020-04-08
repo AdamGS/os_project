@@ -17,15 +17,15 @@ impl Pic {
 }
 
 pub struct PicBoard {
-    pub master_pic: Pic,
-    pub slave_pic: Pic,
+    pub primary_pic: Pic,
+    pub secondary_pic: Pic,
 }
 
 impl PicBoard {
     fn new() -> PicBoard {
         PicBoard {
-            master_pic: Pic::new(0x20),
-            slave_pic: Pic::new(0xA0),
+            primary_pic: Pic::new(0x20),
+            secondary_pic: Pic::new(0xA0),
         }
     }
 }
@@ -37,39 +37,39 @@ pub fn init() -> PicBoard {
         wait_port.write(0);
     };
 
-    let a = board.master_pic.data_port.read();
-    let b = board.slave_pic.data_port.read();
+    let a = board.primary_pic.data_port.read();
+    let b = board.secondary_pic.data_port.read();
 
     // Start init
-    board.master_pic.command_port.write(0x11);
+    board.primary_pic.command_port.write(0x11);
     wait();
-    board.slave_pic.command_port.write(0x11);
+    board.secondary_pic.command_port.write(0x11);
     wait();
 
     // Set offsets
-    board.master_pic.data_port.write(0x20);
+    board.primary_pic.data_port.write(0x20);
     wait();
-    board.slave_pic.data_port.write(0x28);
-    wait();
-
-    board.master_pic.data_port.write(0x0);
-    board.slave_pic.data_port.write(0x0);
-
-    board.master_pic.data_port.write(0x4);
-    wait();
-    board.slave_pic.data_port.write(0x2);
+    board.secondary_pic.data_port.write(0x28);
     wait();
 
-    board.master_pic.data_port.write(0x1);
+    board.primary_pic.data_port.write(0x0);
+    board.secondary_pic.data_port.write(0x0);
+
+    board.primary_pic.data_port.write(0x4);
     wait();
-    board.slave_pic.data_port.write(0x1);
+    board.secondary_pic.data_port.write(0x2);
     wait();
 
-    board.master_pic.command_port.write(0x0);
-    board.slave_pic.command_port.write(0x0);
+    board.primary_pic.data_port.write(0x1);
+    wait();
+    board.secondary_pic.data_port.write(0x1);
+    wait();
 
-    board.master_pic.command_port.write(0x20);
-    board.slave_pic.command_port.write(0x20);
+    board.primary_pic.command_port.write(0x0);
+    board.secondary_pic.command_port.write(0x0);
+
+    board.primary_pic.command_port.write(0x20);
+    board.secondary_pic.command_port.write(0x20);
 
     wait();
 
