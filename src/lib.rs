@@ -37,7 +37,6 @@ pub const HEAP_SIZE: usize = 200 * 1024; // 200 KiB
 
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
-use hardware::pic;
 
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
@@ -54,9 +53,6 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     // set up guard page and map the heap pages
     let mut memory_controller = memory::init(boot_info);
-    interrupts::init(&mut memory_controller);
-
-    let pic_board = pic::init();
 
     unsafe {
         HEAP_ALLOCATOR
@@ -64,11 +60,15 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
             .init(HEAP_START, HEAP_START + HEAP_SIZE);
     }
 
+    hardware::pic::init();
+    interrupts::init(&mut memory_controller);
+
+    println!("Enabling interrupts");
     unsafe {
         x86_64::instructions::interrupts::enable();
     }
 
-    println!("interrupts now enabled");
+    println!("interrupts now enabled!");
 
     loop {
         unsafe {

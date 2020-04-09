@@ -1,7 +1,12 @@
-pub mod keyboard;
+pub mod drivers;
 pub mod pic;
 
+use self::pic::PicBoard;
 use core::marker::PhantomData;
+
+// lazy_static! {
+//     static ref PIC: PicBoard = pic::init();
+// }
 
 pub trait InOut {
     unsafe fn read(port: u16) -> Self;
