@@ -1,9 +1,9 @@
 mod gdt;
 
-use hardware::keyboard::Keyboard;
+use hardware::drivers::DriverManager;
 use memory::MemoryController;
 use spin::Once;
-use x86_64::structures::idt::{ExceptionStackFrame, Idt};
+use x86_64::structures::idt::{ExceptionStackFrame, HandlerFunc, Idt};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
 
@@ -13,16 +13,23 @@ static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<gdt::Gdt> = Once::new();
 
 lazy_static! {
-    static ref IDT: Idt = {
+    pub static ref IDT: Idt = {
         let mut idt = Idt::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
+
+        let driver_manager = DriverManager::new();
 
         unsafe {
             idt.double_fault
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX as u16);
+        }
 
-            idt.interrupts[1].set_handler_fn(keyboard_handler);
+        for d in driver_manager.drivers {
+            println!("Loading driver: {}", d.name);
+            for i in d.interrupts {
+                idt[i.idx].set_handler_fn(i.handler);
+            }
         }
 
         idt
@@ -78,11 +85,4 @@ extern "x86-interrupt" fn double_fault_handler(
 ) {
     println!("\nEXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
     loop {}
-}
-
-extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
-    let keyboard = Keyboard::new();
-    let v = keyboard.read();
-
-    return;
 }
