@@ -1,14 +1,13 @@
 #![feature(lang_items)]
 #![feature(const_fn)]
 #![feature(allocator_api)]
-#![feature(alloc)]
 #![no_std]
 #![feature(ptr_internals)]
 #![feature(abi_x86_interrupt)]
 #![feature(asm)]
-#![feature(panic_handler)]
 #![feature(alloc_error_handler)]
 
+#[macro_use]
 extern crate alloc;
 #[macro_use]
 extern crate lazy_static;
@@ -63,12 +62,9 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     hardware::pic::init();
     interrupts::init(&mut memory_controller);
 
-    println!("Enabling interrupts");
     unsafe {
         x86_64::instructions::interrupts::enable();
     }
-
-    println!("interrupts now enabled!");
 
     loop {
         unsafe {

@@ -29,9 +29,9 @@ impl PicBoard {
     }
 }
 pub fn init() -> PicBoard {
-    let mut board = PicBoard::new();
-    let mut wait_port: Port<u8> = Port::new(0x80);
-    let mut wait = || unsafe {
+    let board = PicBoard::new();
+    let wait_port: Port<u8> = Port::new(0x80);
+    let wait = || unsafe {
         asm!("nop\nnop\nnop");
         wait_port.write(0);
     };
