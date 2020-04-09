@@ -4,11 +4,11 @@ use hardware::Port;
 use x86_64::structures::idt::{ExceptionStackFrame, HandlerFunc};
 
 pub fn driver() -> Driver {
-    let int = DriverInterrupt {
+    let press_key = DriverInterrupt {
         idx: 33,
         handler: keyboard_handler,
     };
-    Driver::new([int].to_vec(), "Keyboard".into())
+    Driver::new([press_key].to_vec(), "Keyboard".into())
 }
 
 extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
