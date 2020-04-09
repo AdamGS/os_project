@@ -3,6 +3,7 @@
 #![feature(allocator_api)]
 #![feature(alloc)]
 #![no_std]
+#![no_main]
 #![feature(ptr_internals)]
 #![feature(abi_x86_interrupt)]
 #![feature(asm)]
@@ -41,6 +42,51 @@ use hardware::pic;
 
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+static HELLO: &[u8] = b"Hello World!";
+
+#[no_mangle]
+pub extern "C" fn _rust_start() -> ! {
+
+    unsafe {
+        //asm!("bits 64");
+        // asm!(r"mov ax, 0
+        //        mov ss, ax
+        //        mov ds, ax
+        //        mov es, ax
+        //        mov fs, ax
+        //        mov gs, ax"::::"volatile", "intel");
+    }
+    unsafe {
+        asm!("mov %ebx, %edi");
+        asm!("cmp %edi, 0x36d76289");
+    }
+
+    //vga_buffer::clear_screen();
+
+    unsafe {
+        asm!("mov eax, 0x2f592f412f4b2f4f"::::"volatile", "intel");
+        asm!("mov dword ptr [0xb8000], eax"::::"volatile", "intel");
+        //asm!("hlt");
+    }
+
+    println!("HELLO WORLD");
+
+
+    let vga_buffer = 0xb8000 as *mut u8;
+
+    //print `HELLO` to the screen (see
+    //https://os.phil-opp.com/minimal-rust-kernel/#printing-to-screen)
+    for (i, &byte) in HELLO.iter().enumerate() {
+        unsafe {
+            *vga_buffer.offset(i as isize * 2) = byte;
+            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
+        }
+    }
+
+    //println!("Hello i'm in start!");
+    loop {}
+}
 
 #[no_mangle]
 pub extern "C" fn rust_main(multiboot_information_address: usize) {
