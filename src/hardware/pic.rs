@@ -1,4 +1,3 @@
-use hardware::InOut;
 use hardware::Port;
 
 // Represents a port on the x86's IO bus

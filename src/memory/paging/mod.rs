@@ -188,7 +188,12 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> Ac
 where
     A: FrameAllocator,
 {
-    let mut temporary_page = TemporaryPage::new(Page { number: 0xcafebabe }, allocator);
+    let mut temporary_page = TemporaryPage::new(
+        Page {
+            number: 0xcafe_babe,
+        },
+        allocator,
+    );
 
     let mut active_table = unsafe { ActivePageTable::new() };
 

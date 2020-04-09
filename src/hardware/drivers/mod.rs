@@ -1,7 +1,6 @@
 use alloc::string::String;
 use alloc::vec::Vec;
-use core::marker::PhantomData;
-use x86_64::structures::idt::{HandlerFunc, HandlerFuncWithErrCode, Idt, PageFaultHandlerFunc};
+use x86_64::structures::idt::HandlerFunc;
 
 pub mod keyboard;
 

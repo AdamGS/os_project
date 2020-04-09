@@ -32,7 +32,7 @@ mod memory;
 #[macro_use]
 extern crate once;
 
-pub const HEAP_START: usize = 0o_000_001_000_000_0000;
+pub const HEAP_START: usize = 0o0_000_010_000_000_000;
 pub const HEAP_SIZE: usize = 200 * 1024; // 200 KiB
 
 use core::panic::PanicInfo;

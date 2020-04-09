@@ -3,7 +3,7 @@ mod gdt;
 use hardware::drivers::DriverManager;
 use memory::MemoryController;
 use spin::Once;
-use x86_64::structures::idt::{ExceptionStackFrame, HandlerFunc, Idt};
+use x86_64::structures::idt::{ExceptionStackFrame, Idt};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
 

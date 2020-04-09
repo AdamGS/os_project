@@ -1,7 +1,6 @@
-use alloc::vec::Vec;
 use hardware::drivers::{Driver, DriverInterrupt};
 use hardware::Port;
-use x86_64::structures::idt::{ExceptionStackFrame, HandlerFunc};
+use x86_64::structures::idt::ExceptionStackFrame;
 
 pub fn driver() -> Driver {
     let press_key = DriverInterrupt {
